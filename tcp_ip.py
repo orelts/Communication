@@ -70,7 +70,7 @@ class Communication:
             return None
 
     def handle_data(self, data):
-       try:
+        try:
             if data[:4] == "info":
                 num_of_rows_to_print = int(data[5])
                 conn, cursor = connect_to_db()
