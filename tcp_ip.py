@@ -1,8 +1,10 @@
 # /usr/bin/python
 import socket
 import sys
+import io
 import time
 import select
+from sql.sql_config import *
 import enum
 import xml.etree.ElementTree as ET
 
@@ -69,26 +71,20 @@ class Communication:
 
     def handle_data(self, data):
        try:
-            if data:
-                root = ET.fromstring(data)
-                inst = root.find('cmd').get('type')
-                if inst == "instruction":
-                    for elem in root.findall('cmd'):
-                        direction = elem.find('dir').text
-                        coordinates = elem.find('coordinates').text
-                        print(direction, coordinates)
-                elif inst == "info":
-                    for elem in root.findall('cmd'):
-                        info = elem.find('info').text
-                        print(info)
-                for child in root:
-                    print(child.tag, child.attrib)
-
-                self.transmit("handled data")
+            if data[:4] == "info":
+                num_of_rows_to_print = int(data[5])
+                conn, cursor = connect_to_db()
+                old_stdout = sys.stdout
+                new_stdout = io.StringIO()
+                sys.stdout = new_stdout
+                print_sql_row(cursor, "SensorsInfo", num_of_rows_to_print)
+                info = new_stdout.getvalue()
+                sys.stdout = old_stdout
+                self.transmit(info)
             else:
                 pass
-       except Exception as e:
-        self.transmit(str(e))
+        except Exception as e:
+            self.transmit(str(e))
 
 
 
@@ -99,42 +95,42 @@ class Communication:
 
 
 
-class Op(enum.Enum):
-    drive = 1
-    info = 2
+# class Op(enum.Enum):
+#     drive = 1
+#     info = 2
 
 
-class Data:
-    def __init__(self, op):
-        self.operation = op
-
-
-class Instructions(Data):
-    def __init__(self, op, dir, coordinates):
-        Data.__init__(self,op)
-        self.coordinates = coordinates
-        self.dir = dir
-
-    def create_xml(self):
-        content = """ <data>
-                        <cmd type="instruction"> 
-                           <dir>""" + str(self.dir) + """ </dir>
-                           <coordinates>""" + str(self.coordinates) + """ </coordinates>
-                        </cmd>
-                    </data>"""
-        return content
-
-
-class Info(Data):
-    def __init__(self, op, info):
-        Data.__init__(self, op)
-        self.info = info
-
-    def create_xml(self):
-        content = """ <data> 
-                         <cmd type="info"> 
-                           <info>""" + str(self.info) + """ </info>
-                        </cmd>
-                    </data>"""
-
-        return content
+# class Data:
+#     def __init__(self, op):
+#         self.operation = op
+#
+#
+# class Instructions(Data):
+#     def __init__(self, op, dir, coordinates):
+#         Data.__init__(self,op)
+#         self.coordinates = coordinates
+#         self.dir = dir
+#
+#     def create_xml(self):
+#         content = """ <data>
+#                         <cmd type="instruction">
+#                            <dir>""" + str(self.dir) + """ </dir>
+#                            <coordinates>""" + str(self.coordinates) + """ </coordinates>
+#                         </cmd>
+#                     </data>"""
+#         return content
+#
+#
+# class Info(Data):
+#     def __init__(self, op, info):
+#         Data.__init__(self, op)
+#         self.info = info
+#
+#     def create_xml(self):
+#         content = """ <data>
+#                          <cmd type="info">
+#                            <info>""" + str(self.info) + """ </info>
+#                         </cmd>
+#                     </data>"""
+#
+#         return content
