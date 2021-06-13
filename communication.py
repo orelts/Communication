@@ -2,9 +2,9 @@
 import tcp_ip as com
 import time
 
-TCP_IP = '192.168.66.29'
-TCP_IP = '5.29.41.252'
-TCP_PORT = 5005
+# TCP_IP = '5.29.37.154'
+TCP_IP = '127.0.0.1'
+TCP_PORT = 6800
 
 
 if __name__ == '__main__':
