@@ -69,6 +69,9 @@ class Communication:
         else:
             return None
 
+    ##  check if message from server contains the word 'info', if does, send readings from sensors
+    # @params data from user
+    # @returns -
     def handle_data(self, data):
         try:
             if data[:4] == "info":
